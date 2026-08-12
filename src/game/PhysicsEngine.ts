@@ -6,6 +6,9 @@ import { PHYSICS } from "../config";
 // se reconcilia contra la posición autoritativa que llega del servidor.
 const { GRAVITY, JUMP_VELOCITY, MAX_FALL_SPEED, SPEED_X, PLAYER_SIZE, GROUND_Y } = PHYSICS;
 
+// Debe coincidir con HITBOX_MARGIN de server/src/game/PhysicsEngine.js.
+const HITBOX_MARGIN = 6;
+
 export type ObstacleType = "spike" | "block" | "platform";
 
 export interface Obstacle {
@@ -48,10 +51,10 @@ function resolveObstacle(
   obstacle: Obstacle,
   prevBottom: number
 ): { type: "death" } | { type: "land"; landY: number } | null {
-  const left = player.x;
-  const right = player.x + PLAYER_SIZE;
-  const top = player.y;
-  const bottom = player.y + PLAYER_SIZE;
+  const left = player.x + HITBOX_MARGIN;
+  const right = player.x + PLAYER_SIZE - HITBOX_MARGIN;
+  const top = player.y + HITBOX_MARGIN;
+  const bottom = player.y + PLAYER_SIZE - HITBOX_MARGIN;
   const obsLeft = obstacle.x;
   const obsRight = obstacle.x + obstacle.w;
   const obsTop = obstacle.y;
@@ -83,7 +86,7 @@ export function stepPlayer(
   const events: PhysicsEvent[] = [];
   if (!player.alive || player.finished || player.eliminated) return events;
 
-  const prevBottom = player.y + PLAYER_SIZE;
+  const prevBottom = player.y + PLAYER_SIZE - HITBOX_MARGIN;
 
   player.x += SPEED_X * dt;
 
