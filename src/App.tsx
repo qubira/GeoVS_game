@@ -2,6 +2,7 @@ import { useAppState } from "./state/AppStateContext";
 import BootstrapScreen from "./screens/BootstrapScreen";
 import LoginScreen from "./screens/LoginScreen";
 import LobbyListScreen from "./screens/LobbyListScreen";
+import RoomBrowserScreen from "./screens/RoomBrowserScreen";
 import RoomWaitingScreen from "./screens/RoomWaitingScreen";
 import GameScreen from "./screens/GameScreen";
 import ResultsScreen from "./screens/ResultsScreen";
@@ -21,6 +22,8 @@ export default function App() {
       return <LoginScreen />;
     case "lobbyList":
       return <LobbyListScreen />;
+    case "roomBrowser":
+      return <RoomBrowserScreen />;
     case "roomWaiting":
       return <RoomWaitingScreen />;
     case "game":

@@ -3,6 +3,7 @@ import { socketClient } from "../network/SocketClient";
 import { clearSession } from "../network/session";
 import { useAppState } from "../state/AppStateContext";
 import Avatar from "../components/Avatar";
+import { flagEmoji, countryLabel } from "../components/country";
 import type { PlayerLobbyDTO } from "../types";
 
 const MODE_LABELS: Record<string, string> = { race: "Carrera", elimination: "Eliminación" };
@@ -183,6 +184,9 @@ export default function RoomWaitingScreen() {
                 <span style={{ flex: 1, fontSize: 14 }}>
                   {p.name}
                   {p.id === room.hostId ? " (host)" : ""}
+                </span>
+                <span title={countryLabel(p.country, p.countryCode)} style={{ fontSize: 15 }}>
+                  {flagEmoji(p.countryCode)}
                 </span>
                 <span
                   style={{

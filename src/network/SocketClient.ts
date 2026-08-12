@@ -53,6 +53,10 @@ class SocketClient {
     return this.emitAck<{ levels: { id: string; name: string; length: number }[] }>("levels:list", {});
   }
 
+  listRooms() {
+    return this.emitAck<{ rooms: import("../types").RoomSummaryDTO[] }>("rooms:list", {});
+  }
+
   createRoom({ levelId, maxPlayers, mode }: { levelId?: string; maxPlayers?: number; mode?: string }) {
     return this.emitAck("room:create", { levelId, maxPlayers, mode });
   }

@@ -84,9 +84,26 @@ export default function LobbyListScreen() {
   return (
     <div className="screen" style={{ justifyContent: "flex-start", paddingTop: "4vh" }}>
       <div style={{ width: "100%", maxWidth: 980 }}>
-        <h1 className="font-display" style={{ textAlign: "center", marginBottom: 18, fontSize: 24 }}>
-          Hola, {playerName}
-        </h1>
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
+          <h1 className="font-display" style={{ margin: 0, fontSize: 24 }}>
+            Hola, {playerName}
+          </h1>
+          <button
+            type="button"
+            onClick={() => navigate("roomBrowser")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--geo-cyan)",
+              fontSize: 13,
+              cursor: "pointer",
+              padding: 0,
+              marginTop: 4,
+            }}
+          >
+            Ver salas activas y jugadores conectados →
+          </button>
+        </div>
 
         <div className="lobby-split">
           {/* Columna izquierda: practicar solo */}

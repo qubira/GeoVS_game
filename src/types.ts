@@ -3,6 +3,8 @@ export interface PlayerLobbyDTO {
   name: string;
   color: string;
   faceState: import("./components/avatars").FaceState;
+  country: string | null;
+  countryCode: string | null;
   ready: boolean;
   connected: boolean;
 }
@@ -14,6 +16,15 @@ export interface RoomDTO {
   mode: "race" | "elimination";
   maxPlayers: number;
   state: "lobby" | "countdown" | "playing" | "finished";
+  players: PlayerLobbyDTO[];
+}
+
+export interface RoomSummaryDTO {
+  code: string;
+  mode: "race" | "elimination";
+  levelId: string;
+  state: "lobby" | "countdown" | "playing" | "finished";
+  maxPlayers: number;
   players: PlayerLobbyDTO[];
 }
 
@@ -45,7 +56,14 @@ export interface RoundEndedPayload {
   results: RoundResult[];
 }
 
-export type SceneName = "bootstrap" | "login" | "lobbyList" | "roomWaiting" | "game" | "results";
+export type SceneName =
+  | "bootstrap"
+  | "login"
+  | "lobbyList"
+  | "roomBrowser"
+  | "roomWaiting"
+  | "game"
+  | "results";
 
 export interface Scene {
   name: SceneName;
