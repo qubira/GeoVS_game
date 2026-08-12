@@ -4,6 +4,7 @@ import { saveSession } from "../network/session";
 import { useAppState } from "../state/AppStateContext";
 import { loadAvatarFace } from "../network/avatarPrefs";
 import Avatar from "../components/Avatar";
+import RoomsModal from "../components/RoomsModal";
 
 const MODES = [
   { id: "race", label: "Carrera" },
@@ -19,6 +20,8 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const HEADER_AVATAR_COLOR = "#22d3ee";
 
+const ROOM_COUNT_REFRESH_MS = 8000;
+
 export default function LobbyListScreen() {
   const { playerName, levels, setLevels, setRoom, setMyPlayerId, navigate } = useAppState();
   const [levelId, setLevelId] = useState<string | null>(null);
@@ -27,12 +30,31 @@ export default function LobbyListScreen() {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showRooms, setShowRooms] = useState(false);
+  const [activeRoomCount, setActiveRoomCount] = useState<number | null>(null);
 
   useEffect(() => {
     socketClient.listLevels().then(({ levels: list }) => {
       setLevels(list || []);
       if (list?.length) setLevelId(list[0].id);
     });
+  }, []);
+
+  // Contador liviano en el botón para que se note, de un vistazo, que hay
+  // salas para ver — sin tener que abrir el panel para descubrirlo.
+  useEffect(() => {
+    let mounted = true;
+    const refresh = () => {
+      socketClient.listRooms().then(({ rooms }) => {
+        if (mounted) setActiveRoomCount(rooms?.length ?? 0);
+      });
+    };
+    refresh();
+    const interval = setInterval(refresh, ROOM_COUNT_REFRESH_MS);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const onPlaySolo = async () => {
@@ -95,10 +117,18 @@ export default function LobbyListScreen() {
           <h1 className="font-display" style={{ margin: "10px 0 2px", fontSize: 24 }}>
             Hola, {playerName}
           </h1>
-          <button type="button" className="btn-pill-link" onClick={() => navigate("roomBrowser")} style={{ marginTop: 6 }}>
-            🌐 Ver salas activas y jugadores conectados
+          <button
+            type="button"
+            className="rooms-trigger-btn"
+            onClick={() => setShowRooms(true)}
+            style={{ marginTop: 8 }}
+          >
+            🌐 Ver salas y jugadores
+            {activeRoomCount !== null && <span className="rooms-trigger-count">{activeRoomCount}</span>}
           </button>
         </div>
+
+        {showRooms && <RoomsModal onClose={() => setShowRooms(false)} />}
 
         <div className="lobby-split">
           {/* Columna izquierda: practicar solo */}

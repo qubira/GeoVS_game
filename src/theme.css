@@ -308,6 +308,99 @@ h3,
   }
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 16, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modal-fade-in 0.18s ease-out;
+}
+
+.modal-pop {
+  animation: modal-pop-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--geo-text);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.modal-close:hover {
+  background: rgba(239, 47, 176, 0.3);
+  transform: rotate(90deg);
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.rooms-trigger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  color: var(--geo-text);
+  border-radius: 999px;
+  padding: 8px 10px 8px 16px;
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.rooms-trigger-btn:hover {
+  background: rgba(34, 211, 238, 0.2);
+  transform: scale(1.03);
+  box-shadow: 0 0 18px -4px var(--geo-cyan);
+}
+
+.rooms-trigger-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--geo-yellow), var(--geo-pink));
+  color: var(--geo-bg);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }

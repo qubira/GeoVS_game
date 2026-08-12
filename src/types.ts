@@ -56,14 +56,7 @@ export interface RoundEndedPayload {
   results: RoundResult[];
 }
 
-export type SceneName =
-  | "bootstrap"
-  | "login"
-  | "lobbyList"
-  | "roomBrowser"
-  | "roomWaiting"
-  | "game"
-  | "results";
+export type SceneName = "bootstrap" | "login" | "lobbyList" | "roomWaiting" | "game" | "results";
 
 export interface Scene {
   name: SceneName;
