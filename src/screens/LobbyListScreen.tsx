@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { socketClient } from "../network/SocketClient";
 import { saveSession } from "../network/session";
 import { useAppState } from "../state/AppStateContext";
-import { loadAvatarFace } from "../network/avatarPrefs";
+import { loadAvatarFace, loadAvatarImageUrl } from "../network/avatarPrefs";
 import { clearToken } from "../network/auth";
 import Avatar from "../components/Avatar";
 import RoomsModal from "../components/RoomsModal";
 import ProfileModal from "../components/ProfileModal";
+import StoreModal from "../components/StoreModal";
+import type { FaceState } from "../components/avatars";
 
 const ROLE_LABELS: Record<string, string> = {
   player: "Jugador",
@@ -41,7 +43,10 @@ export default function LobbyListScreen() {
   const [busy, setBusy] = useState(false);
   const [showRooms, setShowRooms] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showStore, setShowStore] = useState(false);
   const [activeRoomCount, setActiveRoomCount] = useState<number | null>(null);
+  const [face, setFace] = useState<FaceState>(loadAvatarFace);
+  const [avatarImageUrl, setAvatarImageUrl] = useState<string | null>(loadAvatarImageUrl);
 
   const onLogout = async () => {
     await socketClient.leaveRoom().catch(() => {});
@@ -128,7 +133,7 @@ export default function LobbyListScreen() {
       <div style={{ width: "100%", maxWidth: 980 }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 20 }}>
           <span className="avatar-hero-ring">
-            <Avatar color={HEADER_AVATAR_COLOR} state={loadAvatarFace()} size={56} />
+            <Avatar color={HEADER_AVATAR_COLOR} state={face} imageUrl={avatarImageUrl} size={56} />
           </span>
           <h1 className="font-display" style={{ margin: "10px 0 2px", fontSize: 24 }}>
             Hola, {playerName}
@@ -143,6 +148,9 @@ export default function LobbyListScreen() {
               🌐 Ver salas y jugadores
               {activeRoomCount !== null && <span className="rooms-trigger-count">{activeRoomCount}</span>}
             </button>
+            <button type="button" className="btn-pill-link" onClick={() => setShowStore(true)}>
+              🛒 Tienda
+            </button>
             <button type="button" className="btn-pill-link" onClick={() => setShowProfile(true)}>
               ⚙️ Perfil
             </button>
@@ -154,6 +162,15 @@ export default function LobbyListScreen() {
 
         {showRooms && <RoomsModal onClose={() => setShowRooms(false)} />}
         {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+        {showStore && (
+          <StoreModal
+            onClose={() => setShowStore(false)}
+            onChanged={(f, url) => {
+              setFace(f);
+              setAvatarImageUrl(url);
+            }}
+          />
+        )}
 
         <div className="lobby-split">
           {/* Columna izquierda: practicar solo */}

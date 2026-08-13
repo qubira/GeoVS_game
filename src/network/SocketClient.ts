@@ -52,6 +52,12 @@ class SocketClient {
     );
   }
 
+  // Cambiar de avatar (tienda) sin re-disparar todo lo que hace identify()
+  // (registro de conexion, resolucion de pais, etc.) — ver handlers.js.
+  updateAvatar(faceState: string, avatarImageUrl: string | null) {
+    return this.emitAck<{ ok: boolean }>("player:updateAvatar", { faceState, avatarImageUrl: avatarImageUrl || undefined });
+  }
+
   listLevels() {
     return this.emitAck<{ levels: { id: string; name: string; length: number }[] }>("levels:list", {});
   }
