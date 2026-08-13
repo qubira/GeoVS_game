@@ -3,8 +3,17 @@ import { socketClient } from "../network/SocketClient";
 import { saveSession } from "../network/session";
 import { useAppState } from "../state/AppStateContext";
 import { loadAvatarFace } from "../network/avatarPrefs";
+import { clearToken } from "../network/auth";
 import Avatar from "../components/Avatar";
 import RoomsModal from "../components/RoomsModal";
+import ProfileModal from "../components/ProfileModal";
+
+const ROLE_LABELS: Record<string, string> = {
+  player: "Jugador",
+  developer: "Desarrollador",
+  moderator: "Moderador",
+  admin: "Administrador",
+};
 
 const MODES = [
   { id: "race", label: "Carrera" },
@@ -23,7 +32,7 @@ const HEADER_AVATAR_COLOR = "#22d3ee";
 const ROOM_COUNT_REFRESH_MS = 8000;
 
 export default function LobbyListScreen() {
-  const { playerName, levels, setLevels, setRoom, setMyPlayerId, navigate } = useAppState();
+  const { playerName, account, levels, setLevels, setRoom, setMyPlayerId, navigate } = useAppState();
   const [levelId, setLevelId] = useState<string | null>(null);
   const [mode, setMode] = useState<"race" | "elimination">("race");
   const [maxPlayers, setMaxPlayers] = useState(8);
@@ -31,7 +40,14 @@ export default function LobbyListScreen() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [showRooms, setShowRooms] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [activeRoomCount, setActiveRoomCount] = useState<number | null>(null);
+
+  const onLogout = async () => {
+    await socketClient.leaveRoom().catch(() => {});
+    clearToken();
+    navigate("auth");
+  };
 
   useEffect(() => {
     socketClient.listLevels().then(({ levels: list }) => {
@@ -117,18 +133,27 @@ export default function LobbyListScreen() {
           <h1 className="font-display" style={{ margin: "10px 0 2px", fontSize: 24 }}>
             Hola, {playerName}
           </h1>
-          <button
-            type="button"
-            className="rooms-trigger-btn"
-            onClick={() => setShowRooms(true)}
-            style={{ marginTop: 8 }}
-          >
-            🌐 Ver salas y jugadores
-            {activeRoomCount !== null && <span className="rooms-trigger-count">{activeRoomCount}</span>}
-          </button>
+          {account && (
+            <span style={{ fontSize: 11, color: "var(--geo-text-dim)", marginBottom: 8 }}>
+              Rol: <strong style={{ color: "var(--geo-cyan)" }}>{ROLE_LABELS[account.role] || account.role}</strong>
+            </span>
+          )}
+          <div className="row" style={{ justifyContent: "center" }}>
+            <button type="button" className="rooms-trigger-btn" onClick={() => setShowRooms(true)}>
+              🌐 Ver salas y jugadores
+              {activeRoomCount !== null && <span className="rooms-trigger-count">{activeRoomCount}</span>}
+            </button>
+            <button type="button" className="btn-pill-link" onClick={() => setShowProfile(true)}>
+              ⚙️ Perfil
+            </button>
+            <button type="button" className="btn-pill-link" onClick={onLogout} style={{ borderColor: "rgba(239,47,176,0.4)", color: "var(--geo-pink)" }}>
+              Salir
+            </button>
+          </div>
         </div>
 
         {showRooms && <RoomsModal onClose={() => setShowRooms(false)} />}
+        {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
 
         <div className="lobby-split">
           {/* Columna izquierda: practicar solo */}

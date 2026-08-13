@@ -45,8 +45,11 @@ class SocketClient {
     });
   }
 
-  identify(name: string, faceState?: string) {
-    return this.emitAck("player:identify", { name, faceState });
+  identify(name: string, faceState?: string, token?: string | null) {
+    return this.emitAck<{ ok: boolean; playerId: string; account?: { id: string; username: string; role: string } }>(
+      "player:identify",
+      { name, faceState, token: token || undefined }
+    );
   }
 
   listLevels() {

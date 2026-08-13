@@ -1,33 +1,52 @@
 import { useEffect } from "react";
 import { socketClient } from "../network/SocketClient";
 import { loadSession, clearSession } from "../network/session";
+import { loadToken, clearToken, fetchMe } from "../network/auth";
+import { loadAvatarFace } from "../network/avatarPrefs";
 import { useAppState } from "../state/AppStateContext";
 
-// Primera pantalla: intenta restaurar una sesión guardada (recarga de página
-// a mitad de partida) antes de decidir si vamos a Login o directo a la sala.
+// Primera pantalla: valida si hay una sesion de cuenta guardada (token) y,
+// de haberla, si ademas hay una sala a medio jugar (recarga de pagina en
+// pleno partido) antes de decidir a donde navegar.
 export default function BootstrapScreen() {
-  const { setPlayerName, setRoom, setMyPlayerId, navigate } = useAppState();
+  const { setPlayerName, setAccount, setRoom, setMyPlayerId, navigate } = useAppState();
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
+      const token = loadToken();
+      if (!token) {
+        socketClient.bootstrapped = true;
+        return navigate("auth");
+      }
+
+      const me = await fetchMe(token);
+      if (cancelled) return;
+      if (me.status !== 200 || !me.body.user) {
+        clearToken();
+        socketClient.bootstrapped = true;
+        return navigate("auth");
+      }
+      const account = me.body.user;
+      setAccount(account);
+
       socketClient.connect();
       await socketClient.onceConnected();
       if (cancelled) return;
 
+      const idResult = await socketClient.identify(account.username, loadAvatarFace(), token);
+      if (cancelled) return;
+      if (!idResult?.ok) {
+        socketClient.bootstrapped = true;
+        return navigate("auth");
+      }
+      setPlayerName(account.username);
+
       const session = loadSession();
       if (!session) {
         socketClient.bootstrapped = true;
-        return navigate("login");
-      }
-
-      const idResult = await socketClient.identify(session.playerName);
-      if (cancelled) return;
-      if (!idResult?.ok) {
-        clearSession();
-        socketClient.bootstrapped = true;
-        return navigate("login");
+        return navigate("lobbyList");
       }
 
       const rejoinResult = await socketClient.rejoinRoom(session.roomCode, session.myPlayerId);
@@ -36,10 +55,9 @@ export default function BootstrapScreen() {
 
       if (!rejoinResult?.ok) {
         clearSession();
-        return navigate("login");
+        return navigate("lobbyList");
       }
 
-      setPlayerName(session.playerName);
       setRoom(rejoinResult.room);
       setMyPlayerId(session.myPlayerId);
 

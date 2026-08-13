@@ -1,3 +1,5 @@
+export type AccountRole = "player" | "developer" | "moderator" | "admin";
+
 export interface PlayerLobbyDTO {
   id: string;
   name: string;
@@ -5,6 +7,7 @@ export interface PlayerLobbyDTO {
   faceState: import("./components/avatars").FaceState;
   country: string | null;
   countryCode: string | null;
+  role: AccountRole | null;
   ready: boolean;
   connected: boolean;
 }
@@ -56,7 +59,7 @@ export interface RoundEndedPayload {
   results: RoundResult[];
 }
 
-export type SceneName = "bootstrap" | "login" | "lobbyList" | "roomWaiting" | "game" | "results";
+export type SceneName = "bootstrap" | "auth" | "lobbyList" | "roomWaiting" | "game" | "results";
 
 export interface Scene {
   name: SceneName;

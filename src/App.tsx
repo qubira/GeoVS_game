@@ -1,6 +1,6 @@
 import { useAppState } from "./state/AppStateContext";
 import BootstrapScreen from "./screens/BootstrapScreen";
-import LoginScreen from "./screens/LoginScreen";
+import AuthScreen from "./screens/AuthScreen";
 import LobbyListScreen from "./screens/LobbyListScreen";
 import RoomWaitingScreen from "./screens/RoomWaitingScreen";
 import GameScreen from "./screens/GameScreen";
@@ -17,8 +17,8 @@ export default function App() {
   switch (scene.name) {
     case "bootstrap":
       return <BootstrapScreen />;
-    case "login":
-      return <LoginScreen />;
+    case "auth":
+      return <AuthScreen />;
     case "lobbyList":
       return <LobbyListScreen />;
     case "roomWaiting":

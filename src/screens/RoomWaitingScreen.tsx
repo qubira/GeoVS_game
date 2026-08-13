@@ -185,6 +185,20 @@ export default function RoomWaitingScreen() {
                   {p.name}
                   {p.id === room.hostId ? " (host)" : ""}
                 </span>
+                {p.role && p.role !== "player" && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: "2px 7px",
+                      borderRadius: 8,
+                      background: "linear-gradient(90deg, var(--geo-purple), var(--geo-pink))",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {p.role}
+                  </span>
+                )}
                 <span title={countryLabel(p.country, p.countryCode)} style={{ fontSize: 15 }}>
                   {flagEmoji(p.countryCode)}
                 </span>
