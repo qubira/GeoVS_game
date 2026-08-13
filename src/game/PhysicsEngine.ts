@@ -32,6 +32,7 @@ export interface Level {
   speedX?: number;
   jumpVelocity?: number;
   backgroundImageUrl?: string;
+  backgroundScale?: number;
   musicUrl?: string;
 }
 

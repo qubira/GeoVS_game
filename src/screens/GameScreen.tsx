@@ -259,7 +259,9 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
     const bgUrl = game.level.backgroundImageUrl;
     const bgImg = bgUrl ? getBackgroundImage(bgUrl) : null;
     if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
-      const scale = Math.max(WORLD.WIDTH / bgImg.naturalWidth, WORLD.HEIGHT / bgImg.naturalHeight);
+      // "cover" por defecto, ajustable por pista con backgroundScale (ver
+      // modulo Crear del panel): >1 acerca/agranda, <1 aleja/achica.
+      const scale = Math.max(WORLD.WIDTH / bgImg.naturalWidth, WORLD.HEIGHT / bgImg.naturalHeight) * (game.level.backgroundScale ?? 1);
       const dw = bgImg.naturalWidth * scale;
       const dh = bgImg.naturalHeight * scale;
       ctx.drawImage(bgImg, (WORLD.WIDTH - dw) / 2, (WORLD.HEIGHT - dh) / 2, dw, dh);
