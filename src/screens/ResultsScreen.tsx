@@ -78,7 +78,7 @@ export default function ResultsScreen({ params }: { params: RoundEndedPayload })
               <div key={r.playerId} className="row-between" style={{ fontSize: 14, borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 6 }}>
                 <span style={{ width: 24 }}>{r.place}</span>
                 <span style={{ flex: 2, display: "flex", alignItems: "center", gap: 8 }}>
-                  <Avatar color={color} state={faceForRow(r.status, player?.faceState)} size={24} />
+                  <Avatar color={color} state={faceForRow(r.status, player?.faceState)} size={24} imageUrl={player?.avatarImageUrl} />
                   {r.name}
                 </span>
                 <span style={{ width: 50, textAlign: "right" }}>{r.progress}%</span>

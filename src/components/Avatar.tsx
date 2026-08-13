@@ -4,10 +4,12 @@ export default function Avatar({
   color,
   state = "neutral",
   size = 28,
+  imageUrl,
 }: {
   color: string;
   state?: FaceState;
   size?: number;
+  imageUrl?: string | null;
 }) {
   return (
     <span
@@ -23,7 +25,7 @@ export default function Avatar({
       }}
     >
       <img
-        src={AVATAR_SRC[state]}
+        src={imageUrl || AVATAR_SRC[state]}
         alt=""
         style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 35%" }}
       />

@@ -52,3 +52,18 @@ export function faceForStatus(
 }
 
 export const AVATAR_SRC = SOURCES;
+
+// Avatares cubo personalizados subidos desde el modulo "Crear" del panel
+// (ver GeoVS_Control): se cachean por URL igual que las caras integradas,
+// pero son una imagen completa en vez de un recorte del sheet fijo.
+const urlCache = new Map<string, HTMLImageElement>();
+
+export function getFaceImageByUrl(url: string): HTMLImageElement {
+  let img = urlCache.get(url);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    urlCache.set(url, img);
+  }
+  return img;
+}

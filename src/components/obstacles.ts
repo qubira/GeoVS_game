@@ -29,6 +29,21 @@ export function getObstacleImage(type: ObstacleType): HTMLImageElement {
   return img;
 }
 
+// Objetos personalizados subidos desde el modulo "Crear" del panel (ver
+// GeoVS_Control): imagen propia en vez del PNG por defecto del tipo. El
+// `type` sigue determinando la colision, la imagen es puramente visual.
+const urlCache = new Map<string, HTMLImageElement>();
+
+export function getObstacleImageByUrl(url: string): HTMLImageElement {
+  let img = urlCache.get(url);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    urlCache.set(url, img);
+  }
+  return img;
+}
+
 export function borderColorFor(type: ObstacleType) {
   return BORDER_COLOR[type];
 }
@@ -53,12 +68,12 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 // resto de la interfaz.
 export function drawObstacleTile(
   ctx: CanvasRenderingContext2D,
-  obstacle: Pick<Obstacle, "type" | "w" | "h">,
+  obstacle: Pick<Obstacle, "type" | "w" | "h" | "imageUrl">,
   screenX: number,
   y: number
 ) {
-  const { type, w, h } = obstacle;
-  const img = getObstacleImage(type);
+  const { type, w, h, imageUrl } = obstacle;
+  const img = imageUrl ? getObstacleImageByUrl(imageUrl) : getObstacleImage(type);
 
   ctx.save();
   if (type === "spike") {

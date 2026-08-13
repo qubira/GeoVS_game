@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { socketClient } from "../network/SocketClient";
 import { loadSession, clearSession } from "../network/session";
 import { loadToken, clearToken, fetchMe } from "../network/auth";
-import { loadAvatarFace } from "../network/avatarPrefs";
+import { loadAvatarFace, loadAvatarImageUrl } from "../network/avatarPrefs";
 import { useAppState } from "../state/AppStateContext";
 
 // Primera pantalla: valida si hay una sesion de cuenta guardada (token) y,
@@ -35,7 +35,7 @@ export default function BootstrapScreen() {
       await socketClient.onceConnected();
       if (cancelled) return;
 
-      const idResult = await socketClient.identify(account.username, loadAvatarFace(), token);
+      const idResult = await socketClient.identify(account.username, loadAvatarFace(), token, loadAvatarImageUrl());
       if (cancelled) return;
       if (!idResult?.ok) {
         socketClient.bootstrapped = true;

@@ -180,7 +180,7 @@ export default function RoomWaitingScreen() {
                   padding: "8px 10px",
                 }}
               >
-                <Avatar color={p.color} state={p.faceState} />
+                <Avatar color={p.color} state={p.faceState} imageUrl={p.avatarImageUrl} />
                 <span style={{ flex: 1, fontSize: 14 }}>
                   {p.name}
                   {p.id === room.hostId ? " (host)" : ""}

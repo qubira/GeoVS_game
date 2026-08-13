@@ -13,6 +13,19 @@ import type { GameStartPayload, PlayerLobbyDTO } from "../types";
 
 const FLASH_DURATION_MS = 500;
 
+// Fondo personalizado de la pista (ver modulo "Crear" del panel). Cache por
+// URL, mismo patron que obstacles.ts/avatars.ts.
+const backgroundCache = new Map<string, HTMLImageElement>();
+function getBackgroundImage(url: string): HTMLImageElement {
+  let img = backgroundCache.get(url);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    backgroundCache.set(url, img);
+  }
+  return img;
+}
+
 interface PlayerStatus {
   progress: number;
   alive: boolean;
@@ -131,6 +144,20 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
     socketClient.on("room:playerDisconnected", onDisconnected);
     socketClient.on("game:roundEnded", onRoundEnded);
 
+    // Musica de fondo de la pista (solo si la pista trae una — ver modulo
+    // "Crear" del panel). En loop mientras dure la ronda, se detiene al
+    // terminar/desmontar.
+    let musicEl: HTMLAudioElement | null = null;
+    if (game.level.musicUrl) {
+      musicEl = new Audio(game.level.musicUrl);
+      musicEl.loop = true;
+      musicEl.volume = 0.4;
+      musicEl.play().catch(() => {
+        // el navegador puede bloquear el autoplay hasta la primera
+        // interaccion del usuario; no es critico, se degrada en silencio
+      });
+    }
+
     const setJump = (held: boolean) => {
       if (game.input.jumpHeld === held) return;
       game.input.jumpHeld = held;
@@ -182,6 +209,10 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
     return () => {
       mounted = false;
       cancelAnimationFrame(raf);
+      if (musicEl) {
+        musicEl.pause();
+        musicEl.src = "";
+      }
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       canvas?.removeEventListener("pointerdown", onPointerDown);
@@ -225,8 +256,17 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
     ctx.clearRect(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
 
     // fondo
-    ctx.fillStyle = "#12122b";
-    ctx.fillRect(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
+    const bgUrl = game.level.backgroundImageUrl;
+    const bgImg = bgUrl ? getBackgroundImage(bgUrl) : null;
+    if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+      const scale = Math.max(WORLD.WIDTH / bgImg.naturalWidth, WORLD.HEIGHT / bgImg.naturalHeight);
+      const dw = bgImg.naturalWidth * scale;
+      const dh = bgImg.naturalHeight * scale;
+      ctx.drawImage(bgImg, (WORLD.WIDTH - dw) / 2, (WORLD.HEIGHT - dh) / 2, dw, dh);
+    } else {
+      ctx.fillStyle = "#12122b";
+      ctx.fillRect(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
+    }
     // piso
     ctx.fillStyle = "#33344a";
     ctx.fillRect(0, PHYSICS.GROUND_Y + PHYSICS.PLAYER_SIZE, WORLD.WIDTH, WORLD.HEIGHT - PHYSICS.GROUND_Y - PHYSICS.PLAYER_SIZE);
@@ -258,6 +298,7 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
         color: info.color,
         name: info.name,
         baseFace: info.faceState,
+        avatarImageUrl: info.avatarImageUrl || undefined,
         dimmed: status?.connected === false,
         dead: status ? !status.alive : false,
       });
@@ -272,6 +313,7 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
         color: info?.color || "#ffffff",
         name: info?.name || "Tú",
         baseFace: info?.faceState,
+        avatarImageUrl: info?.avatarImageUrl || undefined,
         dead: !myState.alive,
         grounded: myState.grounded,
         vy: myState.vy,

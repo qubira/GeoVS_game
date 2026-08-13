@@ -20,6 +20,7 @@ export interface Obstacle {
   y: number;
   w: number;
   h: number;
+  imageUrl?: string;
 }
 
 export interface Level {
@@ -28,6 +29,10 @@ export interface Level {
   length: number;
   checkpoints: number[];
   obstacles: Obstacle[];
+  speedX?: number;
+  jumpVelocity?: number;
+  backgroundImageUrl?: string;
+  musicUrl?: string;
 }
 
 export interface PlayerPhysicsState {
@@ -93,13 +98,16 @@ export function stepPlayer(
 
   const prevBottom = player.y + PLAYER_SIZE - HITBOX_MARGIN;
 
-  player.x += SPEED_X * dt;
+  // ESPEJO EXACTO de server/src/game/PhysicsEngine.js — level.speedX/
+  // level.jumpVelocity permiten a las pistas creadas desde el panel
+  // sobreescribir la velocidad/salto globales.
+  player.x += (level.speedX ?? SPEED_X) * dt;
 
   player.vy = Math.min(player.vy + GRAVITY * dt, MAX_FALL_SPEED);
   const jumpPressed = input.jumpHeld && !player.prevJumpHeld;
   player.prevJumpHeld = input.jumpHeld;
   if (jumpPressed && player.jumpsUsed < MAX_JUMPS) {
-    player.vy = JUMP_VELOCITY;
+    player.vy = level.jumpVelocity ?? JUMP_VELOCITY;
     player.grounded = false;
     player.jumpsUsed += 1;
   }

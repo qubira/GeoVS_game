@@ -5,6 +5,7 @@ export interface PlayerLobbyDTO {
   name: string;
   color: string;
   faceState: import("./components/avatars").FaceState;
+  avatarImageUrl: string | null;
   country: string | null;
   countryCode: string | null;
   role: AccountRole | null;

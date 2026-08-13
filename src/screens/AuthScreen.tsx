@@ -3,7 +3,7 @@ import { socketClient } from "../network/SocketClient";
 import { useAppState } from "../state/AppStateContext";
 import { register, login, saveToken } from "../network/auth";
 import AvatarCreator from "../components/AvatarCreator";
-import { loadAvatarFace, saveAvatarFace } from "../network/avatarPrefs";
+import { loadAvatarFace, saveAvatarFace, loadAvatarImageUrl, saveAvatarImageUrl } from "../network/avatarPrefs";
 import type { FaceState } from "../components/avatars";
 
 const PREVIEW_COLOR = "#22d3ee";
@@ -28,6 +28,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState("");
   const [age, setAge] = useState("");
   const [face, setFace] = useState<FaceState>(loadAvatarFace);
+  const [avatarImageUrl, setAvatarImageUrl] = useState<string | null>(loadAvatarImageUrl);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -36,12 +37,13 @@ export default function AuthScreen() {
     saveToken(token);
     socketClient.connect();
     await socketClient.onceConnected();
-    const result = await socketClient.identify(accountUsername, face, token);
+    const result = await socketClient.identify(accountUsername, face, token, avatarImageUrl);
     if (!result?.ok) {
       setError("No se pudo conectar al servidor.");
       return false;
     }
     saveAvatarFace(face);
+    saveAvatarImageUrl(avatarImageUrl);
     setPlayerName(accountUsername);
     navigate("lobbyList");
     return true;
@@ -168,7 +170,13 @@ export default function AuthScreen() {
               max={100}
               required
             />
-            <AvatarCreator color={PREVIEW_COLOR} value={face} onChange={setFace} />
+            <AvatarCreator
+              color={PREVIEW_COLOR}
+              value={face}
+              onChange={setFace}
+              avatarImageUrl={avatarImageUrl}
+              onChangeAvatarImageUrl={setAvatarImageUrl}
+            />
           </>
         )}
 

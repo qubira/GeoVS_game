@@ -1,4 +1,4 @@
-import { faceForStatus, getFaceImage, type FaceState } from "./avatars";
+import { faceForStatus, getFaceImage, getFaceImageByUrl, type FaceState } from "./avatars";
 
 // Dibuja el cubo-personaje: cuerpo de color plano (mantiene la lectura
 // instantánea del hitbox, clave en un plataformero de precisión) con la cara
@@ -17,6 +17,10 @@ export interface PlayerCubeState {
   vy?: number;
   /** Expresión "de reposo" elegida por el jugador (ver AvatarCreator). */
   baseFace?: FaceState;
+  /** Avatar cubo personalizado subido desde el panel (ver avatars.ts). Si
+   * está presente, reemplaza la cara integrada — sin variantes de reacción
+   * (feliz/mareado), eso queda solo para el set de caras de siempre. */
+  avatarImageUrl?: string;
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
@@ -53,9 +57,9 @@ export function drawPlayerCube(ctx: CanvasRenderingContext2D, p: PlayerCubeState
   ctx.strokeStyle = "#0a0b1e";
   ctx.stroke();
 
-  // Cara real, recortada al cuerpo del cubo
-  const state = faceForStatus(p, p.baseFace);
-  const img = getFaceImage(state);
+  // Cara real, recortada al cuerpo del cubo — un avatar personalizado
+  // reemplaza el set de caras integrado (sin reaccion de feliz/mareado).
+  const img = p.avatarImageUrl ? getFaceImageByUrl(p.avatarImageUrl) : getFaceImage(faceForStatus(p, p.baseFace));
   if (img.complete && img.naturalWidth > 0) {
     ctx.save();
     roundRect(ctx, x + 1, y + 1, size - 2, size - 2, radius * 0.9);

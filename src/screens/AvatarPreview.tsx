@@ -18,6 +18,7 @@ const COLORS = ["#ff5252", "#4fc3f7", "#69f0ae", "#ffd54f", "#ba68c8", "#ff8a65"
 // módulo creador en aislamiento, sin pasar por login/lobby/sala.
 export default function AvatarPreview() {
   const [face, setFace] = useState<FaceState>("neutral");
+  const [avatarImageUrl, setAvatarImageUrl] = useState<string | null>(null);
 
   return (
     <div className="screen" style={{ justifyContent: "flex-start", paddingTop: 40 }}>
@@ -34,7 +35,13 @@ export default function AvatarPreview() {
           Módulo creador (el que se usa en Login)
         </h2>
         <div className="panel" style={{ maxWidth: 480, marginBottom: 32 }}>
-          <AvatarCreator color="#22d3ee" value={face} onChange={setFace} />
+          <AvatarCreator
+            color="#22d3ee"
+            value={face}
+            onChange={setFace}
+            avatarImageUrl={avatarImageUrl}
+            onChangeAvatarImageUrl={setAvatarImageUrl}
+          />
         </div>
 
         <h2 className="font-display" style={{ fontSize: 16, marginBottom: 10 }}>

@@ -190,7 +190,7 @@ export default function RoomsModal({ onClose }: { onClose: () => void }) {
                             padding: "4px 10px 4px 4px",
                           }}
                         >
-                          <Avatar color={p.color} state={p.faceState} size={22} />
+                          <Avatar color={p.color} state={p.faceState} size={22} imageUrl={p.avatarImageUrl} />
                           <span style={{ fontSize: 12 }}>{p.name}</span>
                           <span style={{ fontSize: 13 }}>{countryLabel(p.country, p.countryCode).split(" ")[0]}</span>
                         </div>

@@ -8,10 +8,12 @@ export default function CubePreview({
   color,
   faceState,
   size = 100,
+  avatarImageUrl,
 }: {
   color: string;
   faceState: FaceState;
   size?: number;
+  avatarImageUrl?: string | null;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -30,6 +32,7 @@ export default function CubePreview({
         color,
         name: "",
         baseFace: faceState,
+        avatarImageUrl: avatarImageUrl || undefined,
         dead: faceState === "dizzy",
         finished: faceState === "happy",
         grounded: true,
@@ -38,7 +41,7 @@ export default function CubePreview({
     };
     draw();
     return () => cancelAnimationFrame(raf);
-  }, [color, faceState, size]);
+  }, [color, faceState, size, avatarImageUrl]);
 
   return <canvas ref={ref} width={size} height={size} style={{ background: "#12122b", borderRadius: 12 }} />;
 }
