@@ -145,16 +145,27 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
     socketClient.on("game:roundEnded", onRoundEnded);
 
     // Musica de fondo de la pista (solo si la pista trae una — ver modulo
-    // "Crear" del panel). En loop mientras dure la ronda, se detiene al
+    // "Crear" del panel). Se reproduce SOLO el tramo recortado por el admin
+    // (musicStartSec..musicEndSec, ver LevelEditor) y ese tramo se repite en
+    // loop mientras dure la ronda — no se usa el atributo `loop` nativo
+    // porque repetiria el archivo entero, no el recorte. Se detiene al
     // terminar/desmontar.
     let musicEl: HTMLAudioElement | null = null;
     if (game.level.musicUrl) {
+      const musicStart = game.level.musicStartSec ?? 0;
+      const musicEnd = game.level.musicEndSec ?? null;
       musicEl = new Audio(game.level.musicUrl);
-      musicEl.loop = true;
       musicEl.volume = 0.4;
-      musicEl.play().catch(() => {
-        // el navegador puede bloquear el autoplay hasta la primera
-        // interaccion del usuario; no es critico, se degrada en silencio
+      const el = musicEl;
+      el.addEventListener("loadedmetadata", () => {
+        el.currentTime = musicStart;
+        el.play().catch(() => {
+          // el navegador puede bloquear el autoplay hasta la primera
+          // interaccion del usuario; no es critico, se degrada en silencio
+        });
+      });
+      el.addEventListener("timeupdate", () => {
+        if (musicEnd != null && el.currentTime >= musicEnd) el.currentTime = musicStart;
       });
     }
 
@@ -255,7 +266,11 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
 
     ctx.clearRect(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
 
-    // fondo
+    // fondo — se mueve con la camara (a menos velocidad que los obstaculos,
+    // efecto parallax de profundidad) y se repite sin cortes, para que nunca
+    // se "quede atras" ni los objetos terminen fuera de la ilustracion en
+    // pistas largas. Antes quedaba fijo en pantalla, que se veia raro apenas
+    // se avanzaba un poco.
     const bgUrl = game.level.backgroundImageUrl;
     const bgImg = bgUrl ? getBackgroundImage(bgUrl) : null;
     if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
@@ -264,7 +279,14 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
       const scale = Math.max(WORLD.WIDTH / bgImg.naturalWidth, WORLD.HEIGHT / bgImg.naturalHeight) * (game.level.backgroundScale ?? 1);
       const dw = bgImg.naturalWidth * scale;
       const dh = bgImg.naturalHeight * scale;
-      ctx.drawImage(bgImg, (WORLD.WIDTH - dw) / 2, (WORLD.HEIGHT - dh) / 2, dw, dh);
+      const dy = (WORLD.HEIGHT - dh) / 2;
+      const PARALLAX = 0.4; // <1 = el fondo se mueve mas lento que el nivel (profundidad)
+      // modulo positivo: cuanto hay que correr el mosaico para que la
+      // repeticion sea invisible sin importar que tan lejos se avanzo
+      const offsetX = (((-cameraX * PARALLAX) % dw) + dw) % dw;
+      for (let x = offsetX - dw; x < WORLD.WIDTH; x += dw) {
+        ctx.drawImage(bgImg, x, dy, dw, dh);
+      }
     } else {
       ctx.fillStyle = "#12122b";
       ctx.fillRect(0, 0, WORLD.WIDTH, WORLD.HEIGHT);

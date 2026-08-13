@@ -34,6 +34,8 @@ export interface Level {
   backgroundImageUrl?: string;
   backgroundScale?: number;
   musicUrl?: string;
+  musicStartSec?: number;
+  musicEndSec?: number;
 }
 
 export interface PlayerPhysicsState {
