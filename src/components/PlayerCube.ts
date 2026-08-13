@@ -38,14 +38,10 @@ export function drawPlayerCube(ctx: CanvasRenderingContext2D, p: PlayerCubeState
   ctx.save();
   ctx.globalAlpha = p.dimmed ? 0.4 : 1;
 
-  // Ligero squash/stretch: comprimido al saltar, estirado al caer rápido.
-  const vy = p.vy ?? 0;
-  const squash = Math.max(-0.18, Math.min(0.18, vy / 4000));
+  // Cubo rigido, sin squash/stretch — misma fisica "de cuadrado" que
+  // Geometry Dash, donde el cubo no cambia de forma al saltar/caer (el
+  // estirado que tenia antes se leia como un bug, no como un efecto).
   const cx = x + size / 2;
-  const cy = y + size;
-  ctx.translate(cx, cy);
-  ctx.scale(1 - squash * 0.5, 1 + squash * 0.5);
-  ctx.translate(-cx, -cy);
 
   const radius = size * 0.22;
 

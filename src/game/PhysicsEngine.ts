@@ -59,22 +59,35 @@ export interface Input {
   jumpHeld: boolean;
 }
 
+// ESPEJO EXACTO de server/src/game/PhysicsEngine.js. `prevY` es la posicion Y
+// del jugador ANTES de moverse este tick — el chequeo vertical es un barrido
+// (swept) sobre todo el rango recorrido, no solo la posicion final, para que
+// a velocidades altas (caida rapida) el jugador no "atraviese" un objeto
+// fino (plataforma de poco alto) sin que ningun tick llegue a detectar el
+// overlap.
 function resolveObstacle(
   player: PlayerPhysicsState,
   obstacle: Obstacle,
-  prevBottom: number
+  prevY: number
 ): { type: "death" } | { type: "land"; landY: number } | null {
   const left = player.x + HITBOX_MARGIN;
   const right = player.x + PLAYER_SIZE - HITBOX_MARGIN;
-  const top = player.y + HITBOX_MARGIN;
-  const bottom = player.y + PLAYER_SIZE - HITBOX_MARGIN;
   const obsLeft = obstacle.x;
   const obsRight = obstacle.x + obstacle.w;
   const obsTop = obstacle.y;
   const obsBottom = obstacle.y + obstacle.h;
 
-  const overlaps = right > obsLeft && left < obsRight && bottom > obsTop && top < obsBottom;
-  if (!overlaps) return null;
+  const horizontalOverlap = right > obsLeft && left < obsRight;
+  if (!horizontalOverlap) return null;
+
+  const prevTop = prevY + HITBOX_MARGIN;
+  const prevBottom = prevY + PLAYER_SIZE - HITBOX_MARGIN;
+  const newTop = player.y + HITBOX_MARGIN;
+  const newBottom = player.y + PLAYER_SIZE - HITBOX_MARGIN;
+  const sweepTop = Math.min(prevTop, newTop);
+  const sweepBottom = Math.max(prevBottom, newBottom);
+  const verticalHit = sweepBottom > obsTop && sweepTop < obsBottom;
+  if (!verticalHit) return null;
 
   if (obstacle.type === "spike") {
     return { type: "death" };
@@ -99,7 +112,7 @@ export function stepPlayer(
   const events: PhysicsEvent[] = [];
   if (!player.alive || player.finished || player.eliminated) return events;
 
-  const prevBottom = player.y + PLAYER_SIZE - HITBOX_MARGIN;
+  const prevY = player.y;
 
   // ESPEJO EXACTO de server/src/game/PhysicsEngine.js — level.speedX/
   // level.jumpVelocity permiten a las pistas creadas desde el panel
@@ -126,7 +139,7 @@ export function stepPlayer(
 
   for (const obstacle of level.obstacles) {
     if (obstacle.x + obstacle.w < player.x - 50 || obstacle.x > player.x + PLAYER_SIZE + 50) continue;
-    const result = resolveObstacle(player, obstacle, prevBottom);
+    const result = resolveObstacle(player, obstacle, prevY);
     if (!result) continue;
     if (result.type === "death") {
       player.alive = false;

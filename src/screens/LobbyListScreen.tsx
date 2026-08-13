@@ -31,7 +31,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const HEADER_AVATAR_COLOR = "#22d3ee";
 
-const ROOM_COUNT_REFRESH_MS = 8000;
+// Cada cuanto se refresca solo (sin que el jugador tenga que recargar la
+// pagina) la lista de niveles y el contador de salas — asi una pista nueva
+// publicada desde el panel, o una sala recien creada por otro jugador,
+// aparece sin intervencion mientras alguien esta parado en el lobby.
+const LOBBY_REFRESH_MS = 15000;
 
 export default function LobbyListScreen() {
   const { playerName, account, levels, setLevels, setRoom, setMyPlayerId, navigate } = useAppState();
@@ -54,11 +58,25 @@ export default function LobbyListScreen() {
     navigate("auth");
   };
 
+  // Se repite cada LOBBY_REFRESH_MS (no solo al montar) para que una pista
+  // publicada mientras el jugador ya esta en el lobby aparezca sola. Si la
+  // pista que tenia elegida deja de existir (se borro/despublico), cae a la
+  // primera disponible en vez de quedar apuntando a un id invalido.
   useEffect(() => {
-    socketClient.listLevels().then(({ levels: list }) => {
-      setLevels(list || []);
-      if (list?.length) setLevelId(list[0].id);
-    });
+    let mounted = true;
+    const refresh = () => {
+      socketClient.listLevels().then(({ levels: list }) => {
+        if (!mounted) return;
+        setLevels(list || []);
+        setLevelId((prev) => (prev && list?.some((l) => l.id === prev) ? prev : list?.[0]?.id ?? null));
+      });
+    };
+    refresh();
+    const interval = setInterval(refresh, LOBBY_REFRESH_MS);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Contador liviano en el botón para que se note, de un vistazo, que hay
@@ -71,7 +89,7 @@ export default function LobbyListScreen() {
       });
     };
     refresh();
-    const interval = setInterval(refresh, ROOM_COUNT_REFRESH_MS);
+    const interval = setInterval(refresh, LOBBY_REFRESH_MS);
     return () => {
       mounted = false;
       clearInterval(interval);
