@@ -13,6 +13,13 @@ import type { GameStartPayload, PlayerLobbyDTO } from "../types";
 
 const FLASH_DURATION_MS = 500;
 
+// El canvas se dibuja en coordenadas "logicas" (WORLD.WIDTH x WORLD.HEIGHT)
+// pero el buffer real se crea mas grande segun la densidad de pixeles de la
+// pantalla (retina/alta resolucion), si no la imagen sale borrosa al
+// estirarse por CSS para llenar la ventana — mas notorio en movimientos
+// rapidos como el salto. Tope en 2x para no gastar de mas en pantallas 3x/4x.
+const DPR = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+
 // Fondo personalizado de la pista (ver modulo "Crear" del panel). Cache por
 // URL, mismo patron que obstacles.ts/avatars.ts.
 const backgroundCache = new Map<string, HTMLImageElement>();
@@ -264,6 +271,10 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // El buffer fisico es WORLD * DPR; este transform hace que todo el resto
+    // del codigo pueda seguir dibujando en coordenadas logicas (0..WORLD.WIDTH)
+    // sin cambiar nada mas.
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, WORLD.WIDTH, WORLD.HEIGHT);
 
     // fondo — se mueve con la camara (a menos velocidad que los obstaculos,
@@ -376,8 +387,8 @@ export default function GameScreen({ params }: { params: GameStartPayload }) {
       <div style={{ position: "relative", width: "100%", maxWidth: `min(100vw, ${(WORLD.WIDTH / WORLD.HEIGHT) * 100}vh)`, aspectRatio: `${WORLD.WIDTH} / ${WORLD.HEIGHT}` }}>
         <canvas
           ref={canvasRef}
-          width={WORLD.WIDTH}
-          height={WORLD.HEIGHT}
+          width={WORLD.WIDTH * DPR}
+          height={WORLD.HEIGHT * DPR}
           style={{ width: "100%", height: "100%", display: "block", touchAction: "none", cursor: "pointer" }}
         />
 
