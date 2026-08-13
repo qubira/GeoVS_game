@@ -9,6 +9,9 @@ const { GRAVITY, JUMP_VELOCITY, MAX_FALL_SPEED, SPEED_X, PLAYER_SIZE, GROUND_Y }
 // Debe coincidir con HITBOX_MARGIN de server/src/game/PhysicsEngine.js.
 const HITBOX_MARGIN = 6;
 
+// Debe coincidir con MAX_JUMPS de server/src/game/PhysicsEngine.js.
+const MAX_JUMPS = 2;
+
 export type ObstacleType = "spike" | "block" | "platform";
 
 export interface Obstacle {
@@ -32,6 +35,8 @@ export interface PlayerPhysicsState {
   y: number;
   vy: number;
   grounded: boolean;
+  jumpsUsed: number;
+  prevJumpHeld: boolean;
   alive: boolean;
   eliminated: boolean;
   finished: boolean;
@@ -91,9 +96,12 @@ export function stepPlayer(
   player.x += SPEED_X * dt;
 
   player.vy = Math.min(player.vy + GRAVITY * dt, MAX_FALL_SPEED);
-  if (input.jumpHeld && player.grounded) {
+  const jumpPressed = input.jumpHeld && !player.prevJumpHeld;
+  player.prevJumpHeld = input.jumpHeld;
+  if (jumpPressed && player.jumpsUsed < MAX_JUMPS) {
     player.vy = JUMP_VELOCITY;
     player.grounded = false;
+    player.jumpsUsed += 1;
   }
   player.y += player.vy * dt;
 
@@ -102,6 +110,7 @@ export function stepPlayer(
     player.y = GROUND_Y - PLAYER_SIZE;
     player.vy = 0;
     player.grounded = true;
+    player.jumpsUsed = 0;
   }
 
   for (const obstacle of level.obstacles) {
@@ -117,6 +126,7 @@ export function stepPlayer(
       player.y = result.landY;
       player.vy = 0;
       player.grounded = true;
+      player.jumpsUsed = 0;
     }
   }
 
@@ -138,6 +148,8 @@ export function makeInitialPlayerState(): PlayerPhysicsState {
     y: GROUND_Y - PLAYER_SIZE,
     vy: 0,
     grounded: true,
+    jumpsUsed: 0,
+    prevJumpHeld: false,
     alive: true,
     eliminated: false,
     finished: false,
