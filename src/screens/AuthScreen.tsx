@@ -17,6 +17,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_AGE: "Ingresa una edad válida.",
   INVALID_CREDENTIALS: "Usuario o contraseña incorrectos.",
   ACCOUNT_BLOCKED: "Esta cuenta está bloqueada.",
+  IP_BLOCKED: "No se puede acceder desde esta conexión.",
 };
 
 export default function AuthScreen() {
@@ -39,7 +40,7 @@ export default function AuthScreen() {
     await socketClient.onceConnected();
     const result = await socketClient.identify(accountUsername, face, token, avatarImageUrl);
     if (!result?.ok) {
-      setError("No se pudo conectar al servidor.");
+      setError(ERROR_MESSAGES[result?.error || ""] || "No se pudo conectar al servidor.");
       return false;
     }
     saveAvatarFace(face);

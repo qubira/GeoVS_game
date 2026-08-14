@@ -62,7 +62,7 @@ class SocketClient {
   }
 
   identify(name: string, faceState?: string, token?: string | null, avatarImageUrl?: string | null) {
-    return this.emitAck<{ ok: boolean; playerId: string; account?: { id: string; username: string; role: string } }>(
+    return this.emitAck<{ ok: boolean; playerId?: string; account?: { id: string; username: string; role: string }; error?: string }>(
       "player:identify",
       { name, faceState, token: token || undefined, avatarImageUrl: avatarImageUrl || undefined }
     );
