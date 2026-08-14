@@ -109,6 +109,12 @@ class SocketClient {
   sendChat(text: string) {
     this.emit("chat:message", { text });
   }
+
+  // Relay punto a punto de señalización WebRTC (ver VoiceChat.ts) — el
+  // servidor solo reenvia `data` al jugador `toPlayerId`, sin interpretarla.
+  sendVoiceSignal(toPlayerId: string, data: unknown) {
+    this.emit("voice:signal", { toPlayerId, data });
+  }
 }
 
 export const socketClient = new SocketClient();

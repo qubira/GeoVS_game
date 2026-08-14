@@ -6,6 +6,7 @@ import RoomWaitingScreen from "./screens/RoomWaitingScreen";
 import GameScreen from "./screens/GameScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import AvatarPreview from "./screens/AvatarPreview";
+import VoiceChatManager from "./voice/VoiceChatManager";
 
 export default function App() {
   const { scene } = useAppState();
@@ -14,20 +15,27 @@ export default function App() {
     return <AvatarPreview />;
   }
 
-  switch (scene.name) {
-    case "bootstrap":
-      return <BootstrapScreen />;
-    case "auth":
-      return <AuthScreen />;
-    case "lobbyList":
-      return <LobbyListScreen />;
-    case "roomWaiting":
-      return <RoomWaitingScreen />;
-    case "game":
-      return <GameScreen params={scene.params} />;
-    case "results":
-      return <ResultsScreen params={scene.params} />;
-    default:
-      return null;
-  }
+  return (
+    <>
+      {(() => {
+        switch (scene.name) {
+          case "bootstrap":
+            return <BootstrapScreen />;
+          case "auth":
+            return <AuthScreen />;
+          case "lobbyList":
+            return <LobbyListScreen />;
+          case "roomWaiting":
+            return <RoomWaitingScreen />;
+          case "game":
+            return <GameScreen params={scene.params} />;
+          case "results":
+            return <ResultsScreen params={scene.params} />;
+          default:
+            return null;
+        }
+      })()}
+      <VoiceChatManager />
+    </>
+  );
 }
