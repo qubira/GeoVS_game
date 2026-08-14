@@ -18,6 +18,10 @@ class SocketClient {
   connect() {
     if (this.socket) return this.socket;
     this.socket = io(NETWORK.SERVER_URL, { transports: ["websocket"] });
+    // El servidor mide la latencia real (ping/RTT) para el modulo "Salas"
+    // del panel — solo necesita que el cliente reenvie el callback que le
+    // llega, sin mandar ningun dato propio (ver server/src/metrics/latency.js).
+    this.socket.on("ping:check", (cb?: () => void) => cb?.());
     for (const [event, callbacks] of this.pendingListeners) {
       for (const cb of callbacks) this.socket.on(event, cb);
     }

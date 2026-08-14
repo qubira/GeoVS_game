@@ -8,6 +8,7 @@ import ResultsScreen from "./screens/ResultsScreen";
 import AvatarPreview from "./screens/AvatarPreview";
 import VoiceChatManager from "./voice/VoiceChatManager";
 import ModerationManager from "./moderation/ModerationManager";
+import RoomEndedNotice from "./rooms/RoomEndedNotice";
 
 export default function App() {
   const { scene } = useAppState();
@@ -38,6 +39,7 @@ export default function App() {
       })()}
       <VoiceChatManager />
       <ModerationManager />
+      <RoomEndedNotice />
     </>
   );
 }
