@@ -166,6 +166,16 @@ export default function LobbyListScreen() {
               🌐 Ver salas y jugadores
               {activeRoomCount !== null && <span className="rooms-trigger-count">{activeRoomCount}</span>}
             </button>
+            {account && account.role !== "player" && (
+              <a
+                href="https://geo-vs-control.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-pill-link"
+              >
+                🛠️ Panel de control
+              </a>
+            )}
             <button type="button" className="btn-pill-link" onClick={() => setShowStore(true)}>
               🛒 Tienda
             </button>
