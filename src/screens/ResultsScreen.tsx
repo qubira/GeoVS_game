@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { socketClient } from "../network/SocketClient";
 import { clearSession } from "../network/session";
+import { loadToken, fetchPendingWarnings } from "../network/auth";
 import { useAppState } from "../state/AppStateContext";
 import Avatar from "../components/Avatar";
 import type { FaceState } from "../components/avatars";
@@ -31,7 +32,7 @@ function formatTime(ms: number | null) {
 }
 
 export default function ResultsScreen({ params }: { params: RoundEndedPayload }) {
-  const { room, setRoom, myPlayerId, navigate } = useAppState();
+  const { room, setRoom, myPlayerId, navigate, addPendingWarnings } = useAppState();
   const [error, setError] = useState("");
   const isHost = room?.hostId === myPlayerId;
 
@@ -42,6 +43,14 @@ export default function ResultsScreen({ params }: { params: RoundEndedPayload })
     };
     socketClient.on("room:backToLobby", onBackToLobby);
     return () => socketClient.off("room:backToLobby", onBackToLobby);
+  }, []);
+
+  // Se re-consulta aca (ademas del login) para que una alerta mandada a
+  // media partida no espere hasta el proximo inicio de sesion.
+  useEffect(() => {
+    const token = loadToken();
+    if (!token) return;
+    fetchPendingWarnings(token).then(({ body }) => addPendingWarnings(body.pendingWarnings || []));
   }, []);
 
   const onPlayAgain = async () => {

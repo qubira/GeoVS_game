@@ -7,10 +7,20 @@ import { NETWORK } from "../config";
 class SocketClient {
   socket: Socket | null = null;
   bootstrapped = false;
+  // Listeners registrados ANTES de que exista `socket` (p. ej. componentes
+  // montados a nivel de App, como ModerationManager, que escuchan desde el
+  // arranque, antes de cualquier login) — sin esto `on()` los perdia en
+  // silencio, ya que `this.socket?.on(...)` no hace nada si socket es null,
+  // y una vez creado el socket via connect() esos listeners nunca se volvian
+  // a registrar.
+  private pendingListeners = new Map<string, Set<(...args: any[]) => void>>();
 
   connect() {
     if (this.socket) return this.socket;
     this.socket = io(NETWORK.SERVER_URL, { transports: ["websocket"] });
+    for (const [event, callbacks] of this.pendingListeners) {
+      for (const cb of callbacks) this.socket.on(event, cb);
+    }
     return this.socket;
   }
 
@@ -28,11 +38,17 @@ class SocketClient {
   }
 
   on(event: string, cb: (...args: any[]) => void) {
-    this.socket?.on(event, cb);
+    if (this.socket) {
+      this.socket.on(event, cb);
+      return;
+    }
+    if (!this.pendingListeners.has(event)) this.pendingListeners.set(event, new Set());
+    this.pendingListeners.get(event)!.add(cb);
   }
 
   off(event: string, cb: (...args: any[]) => void) {
     this.socket?.off(event, cb);
+    this.pendingListeners.get(event)?.delete(cb);
   }
 
   emit(event: string, payload: unknown) {

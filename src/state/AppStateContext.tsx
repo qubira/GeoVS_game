@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import type { RoomDTO, LevelSummary, Scene, SceneName } from "../types";
+import type { RoomDTO, LevelSummary, Scene, SceneName, PendingWarning } from "../types";
 import type { Account } from "../network/auth";
 
 interface AppStateValue {
@@ -15,6 +15,12 @@ interface AppStateValue {
   setLevels: (levels: LevelSummary[]) => void;
   scene: Scene;
   navigate: (name: SceneName, params?: any) => void;
+  // Alertas de moderacion sin mostrar todavia (ver ModerationManager.tsx) —
+  // cola global porque se pueden alimentar desde el login O desde la
+  // pantalla de resultados de fin de partida, no una sola.
+  pendingWarnings: PendingWarning[];
+  addPendingWarnings: (warnings: PendingWarning[]) => void;
+  dismissPendingWarning: (id: string) => void;
 }
 
 const AppContext = createContext<AppStateValue | null>(null);
@@ -26,8 +32,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
   const [levels, setLevels] = useState<LevelSummary[]>([]);
   const [scene, setScene] = useState<Scene>({ name: "bootstrap", params: {} });
+  const [pendingWarnings, setPendingWarnings] = useState<PendingWarning[]>([]);
 
   const navigate = useCallback((name: SceneName, params: any = {}) => setScene({ name, params }), []);
+  const addPendingWarnings = useCallback((warnings: PendingWarning[]) => {
+    if (!warnings.length) return;
+    setPendingWarnings((prev) => [...prev, ...warnings]);
+  }, []);
+  const dismissPendingWarning = useCallback((id: string) => {
+    setPendingWarnings((prev) => prev.filter((w) => w.id !== id));
+  }, []);
 
   const value: AppStateValue = {
     playerName,
@@ -42,6 +56,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLevels,
     scene,
     navigate,
+    pendingWarnings,
+    addPendingWarnings,
+    dismissPendingWarning,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

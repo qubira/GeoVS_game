@@ -1,4 +1,5 @@
 import { NETWORK } from "../config";
+import type { PendingWarning } from "../types";
 
 export interface Account {
   id: string;
@@ -41,9 +42,19 @@ export function register(input: { email: string; username: string; password: str
 }
 
 export function login(input: { username: string; password: string }) {
-  return request<{ ok: boolean; token?: string; user?: Account; error?: string }>("/auth/login", {
+  return request<{ ok: boolean; token?: string; user?: Account; pendingWarnings?: PendingWarning[]; error?: string }>("/auth/login", {
     method: "POST",
     body: JSON.stringify(input),
+  });
+}
+
+// Se vuelve a consultar al llegar a la pantalla de resultados de fin de
+// partida — asi una alerta mandada a media partida no espera hasta el
+// proximo login para mostrarse (ver server auth.js deliverPendingWarnings).
+export function fetchPendingWarnings(token: string) {
+  return request<{ ok: boolean; pendingWarnings?: PendingWarning[]; error?: string }>("/auth/pending-warnings", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
 

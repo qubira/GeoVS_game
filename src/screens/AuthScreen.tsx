@@ -20,7 +20,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export default function AuthScreen() {
-  const { setPlayerName, setAccount, navigate } = useAppState();
+  const { setPlayerName, setAccount, navigate, addPendingWarnings } = useAppState();
   const [mode, setMode] = useState<"login" | "register">("login");
 
   const [username, setUsername] = useState("");
@@ -60,6 +60,7 @@ export default function AuthScreen() {
         return;
       }
       setAccount(body.user);
+      addPendingWarnings(body.pendingWarnings || []);
       await enterGame(body.token, body.user.username);
     } catch {
       setError("No se pudo conectar al servidor.");

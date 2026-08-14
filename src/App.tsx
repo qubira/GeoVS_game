@@ -7,6 +7,7 @@ import GameScreen from "./screens/GameScreen";
 import ResultsScreen from "./screens/ResultsScreen";
 import AvatarPreview from "./screens/AvatarPreview";
 import VoiceChatManager from "./voice/VoiceChatManager";
+import ModerationManager from "./moderation/ModerationManager";
 
 export default function App() {
   const { scene } = useAppState();
@@ -36,6 +37,7 @@ export default function App() {
         }
       })()}
       <VoiceChatManager />
+      <ModerationManager />
     </>
   );
 }

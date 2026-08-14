@@ -1,5 +1,15 @@
 export type AccountRole = "player" | "developer" | "moderator" | "admin";
 
+// Alerta de moderacion pendiente de mostrar (ver server auth.js
+// deliverPendingWarnings) — llega al loguearse y tambien se re-consulta al
+// terminar una partida, lo que pase primero.
+export interface PendingWarning {
+  id: string;
+  reasonLabel: string;
+  messageText: string | null;
+  createdAt: string;
+}
+
 export interface PlayerLobbyDTO {
   id: string;
   name: string;
