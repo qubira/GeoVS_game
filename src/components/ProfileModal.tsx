@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppState } from "../state/AppStateContext";
 import { loadToken, updateProfile } from "../network/auth";
+import { sendFeedback } from "../network/feedback";
 
 const ERROR_MESSAGES: Record<string, string> = {
   EMAIL_IN_USE: "Ese correo ya está en uso. Prueba con otro.",
@@ -28,6 +29,11 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [comment, setComment] = useState("");
+  const [commentSending, setCommentSending] = useState(false);
+  const [commentSent, setCommentSent] = useState(false);
+  const [commentError, setCommentError] = useState("");
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -37,6 +43,24 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
   }, []);
 
   if (!account) return null;
+
+  const onSendComment = async () => {
+    const text = comment.trim();
+    if (!text) return;
+    const token = loadToken();
+    if (!token) return;
+    setCommentSending(true);
+    setCommentError("");
+    setCommentSent(false);
+    const { status } = await sendFeedback(token, text);
+    setCommentSending(false);
+    if (status !== 201) {
+      setCommentError("No se pudo enviar el comentario.");
+      return;
+    }
+    setComment("");
+    setCommentSent(true);
+  };
 
   const onSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +143,35 @@ export default function ProfileModal({ onClose }: { onClose: () => void }) {
         </button>
         {!!error && <p className="error-text">{error}</p>}
         {!!success && <p style={{ color: "var(--geo-cyan)", textAlign: "center", fontSize: 13, marginTop: 10 }}>{success}</p>}
+
+        <div style={{ borderTop: "1px solid var(--geo-border)", margin: "18px 0 12px" }} />
+
+        <div className="label" style={{ marginTop: 0 }}>
+          💬 Sugerencias / comentarios
+        </div>
+        <p className="subtitle" style={{ textAlign: "left", margin: "0 0 8px", fontSize: 12 }}>
+          ¿Algo que quieras contarnos? Un admin lo va a leer.
+        </p>
+        <textarea
+          className="input"
+          rows={3}
+          maxLength={1000}
+          placeholder="Escribe tu comentario..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          style={{ resize: "vertical", fontFamily: "inherit" }}
+        />
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={commentSending || !comment.trim()}
+          onClick={onSendComment}
+          style={{ marginTop: 4 }}
+        >
+          {commentSending ? "Enviando..." : "Enviar comentario"}
+        </button>
+        {!!commentError && <p className="error-text">{commentError}</p>}
+        {commentSent && <p style={{ color: "var(--geo-cyan)", textAlign: "center", fontSize: 13, marginTop: 8 }}>¡Gracias! Tu comentario fue enviado.</p>}
       </form>
     </div>
   );
