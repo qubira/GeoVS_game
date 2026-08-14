@@ -9,7 +9,7 @@ import { useAppState } from "../state/AppStateContext";
 // de haberla, si ademas hay una sala a medio jugar (recarga de pagina en
 // pleno partido) antes de decidir a donde navegar.
 export default function BootstrapScreen() {
-  const { setPlayerName, setAccount, setRoom, setMyPlayerId, navigate } = useAppState();
+  const { setPlayerName, setAccount, setRoom, setMyPlayerId, navigate, addPendingWarnings } = useAppState();
 
   useEffect(() => {
     let cancelled = false;
@@ -22,6 +22,14 @@ export default function BootstrapScreen() {
       }
 
       const me = await fetchMe(token);
+      // Se entrega ANTES de mirar `cancelled` y a proposito fuera del bloque
+      // de abajo: el servidor ya marco estas alertas como entregadas al
+      // responder (ver deliverPendingWarnings), asi que si este efecto
+      // resulta ser el que React descarta (p. ej. el doble-montaje de
+      // StrictMode en desarrollo, o cualquier remontaje real), la alerta ya
+      // se habria consumido en el servidor sin llegar a mostrarse nunca si
+      // se descartaba aca tambien.
+      addPendingWarnings(me.body.pendingWarnings || []);
       if (cancelled) return;
       if (me.status !== 200 || !me.body.user) {
         clearToken();

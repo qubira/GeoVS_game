@@ -59,7 +59,7 @@ export function fetchPendingWarnings(token: string) {
 }
 
 export function fetchMe(token: string) {
-  return request<{ ok: boolean; user?: Account; error?: string }>("/auth/me", {
+  return request<{ ok: boolean; user?: Account; pendingWarnings?: PendingWarning[]; error?: string }>("/auth/me", {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
